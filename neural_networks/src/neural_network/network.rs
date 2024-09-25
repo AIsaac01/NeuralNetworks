@@ -1,7 +1,5 @@
 use crate::functions::*;
 
-const LEARNING_RATE: f32 = 0.05;
-
 // coordinate for neuron is (layer number, neuron number), 0-indexed
 type Coord = (usize, usize);
 
@@ -36,6 +34,7 @@ pub struct Link {
 pub struct Network {
 	matrix: Vec<Vec<Neuron>>,
 	links: Vec<Link>,
+	learning_rate: f32
 }
 
 /****************** Implementations ******************/
@@ -107,6 +106,31 @@ impl Neuron {
 		}
 	}
 
+	pub fn to_string(&self) -> String {
+		let mut s = String::new();
+		s.push_str(self.location.0.to_string().as_str());
+		s.push_str("-");
+		s.push_str(self.location.1.to_string().as_str());
+		s.push_str("-");
+		let act: &str = match &self.actv_func {
+			None => "None",
+			Some(a) => match a {
+				ActivationFunction::Sigmoid => "Sigmoid",
+				ActivationFunction::ReLU => "ReLU"
+			}
+		};
+		s.push_str(act);
+		s.push_str("-");
+		let loss: &str = match &self.loss_func {
+			None => "None",
+			Some(a) => match a {
+				LossFunction::MeanSquareError => "MeanSquareError"
+			}
+		};
+		s.push_str(loss);
+		s
+	}
+
 }
 
 
@@ -118,15 +142,35 @@ impl Link {
 			weight: wht
 		}
 	}
+
+	pub fn to_string(&self) -> String {
+		let mut s = String::new();
+		s.push_str(self.from.0.to_string().as_str());
+		s.push_str("-");
+		s.push_str(self.from.1.to_string().as_str());
+		s.push_str("-");
+		s.push_str(self.to.0.to_string().as_str());
+		s.push_str("-");
+		s.push_str(self.to.1.to_string().as_str());
+		s.push_str("-");
+		s.push_str(self.weight.to_string().as_str());
+		s
+	}
 }
 
 
 impl Network {
-	pub fn new() -> Network {
+	pub fn new(lr: f32) -> Network {
 		Network {
 			matrix: Vec::new(),
 			links: Vec::new(),
+			learning_rate: lr
+
 		}
+	}
+
+	pub fn set_learning_rate(&mut self, lr: f32) {
+		self.learning_rate = lr;
 	}
 
 	pub fn add_layer(&mut self, layer: Vec<Neuron>) {
@@ -232,13 +276,29 @@ impl Network {
 		for link in self.links.iter_mut() {
 			if link.to == loc {
 				// update weight
-				link.weight = link.weight - LEARNING_RATE * self.matrix[loc.0][loc.1].loss * self.matrix[link.from.0][link.from.1].activated_value;
+				link.weight = link.weight - self.learning_rate * self.matrix[loc.0][loc.1].loss * self.matrix[link.from.0][link.from.1].activated_value;
 				to_be_updated.push( link.from );
 			}
 		}
 
 		for i in to_be_updated.iter() {
 			self.update_weights(*i);
+		}
+	}
+
+	pub fn save_weights(&self) -> Vec<f32> {
+		let mut weights: Vec<f32> = Vec::new();
+		for link in self.links.iter() {
+			weights.push( link.weight );
+		}
+		weights
+	}
+
+	pub fn attach_weights(&mut self, weights: Vec<f32>) {
+		// make sure number of input weights matches number of network weights
+		assert_eq!(self.links.len(), weights.len());
+		for i in 0..weights.len() {
+			self.links[i].weight = weights[i];
 		}
 	}
 
@@ -253,5 +313,31 @@ impl Network {
 		}
 	}
 
+	pub fn to_string(&self) -> String {
+		let mut contents = String::new();
+		contents.push_str("Neurons\n");
+		for layer in self.matrix.iter() {
+			for neuron in layer.iter() {
+				contents.push_str( &neuron.to_string().as_str() );
+				contents.push(' ');
+			}
+			contents.pop();
+			contents.push('\n');
+		}
 
+		contents.push_str("Links\n");
+		let mut layer_num: usize = 0;
+		for link in self.links.iter() {
+			if link.from.0 > layer_num {
+				contents.pop();
+				contents.push('\n');
+				layer_num += 1;
+			}
+			contents.push_str( &link.to_string().as_str() );
+			contents.push(' ');
+		}
+		contents.pop();
+		println!("{}", contents);
+		contents
+	}
 }
