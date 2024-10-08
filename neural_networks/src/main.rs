@@ -3,6 +3,7 @@ mod math;
 mod neural_network;
 mod nnd;
 
+use gui::app::App;
 use gui::main_menu::*;
 use math::functions;
 use neural_network::network::*;
@@ -14,13 +15,13 @@ fn main() {
 	// let path: &str = r"C:\Users\Ayham\Programming\NeuralNetworks\NeuralNetworks\nnd_files\my_network_2.nnd";
 	// let n: Network = read_nnd(path).unwrap();
 	// //n.print_neuron_vals();
-	// write_nnd(r"C:\Users\Ayham\Programming\NeuralNetworks\NeuralNetworks\nnd_files\my_network.nnd", n);
+
 	let _ = iced::application("Neural Network App", App::update, App::view)
 		.theme(|_| Theme::Dark)
         .centered()
         .run();
 
-	//
+
 	// // initialize network
 	// let mut my_net = Network::new(0.05);
 	//
@@ -98,15 +99,18 @@ fn main() {
 	// // 1, 0 -> 1
 	// let inputs: Vec<f32> = vec![1.0, 0.0];
 	// my_net.attach_inputs(inputs);
-	// let expected_output: Vec<f32> = vec!(1.0);
+	// let expected_output: Vec<f32> = vec!(5.0);
 	//
-	// for _ in 0..100 {
+	// my_net.forward_prop();
+	// my_net.print_neuron_vals();
+	//
+	// for _ in 0..100000 {
 	// 	my_net.forward_prop();
 	// 	my_net.back_prop(expected_output.clone());
 	// }
 	// let w1 = my_net.save_weights();
-	// // my_net.print_neuron_vals();
-	//
+	// my_net.print_neuron_vals();
+
 	//
 	// // 0, 1 -> 1
 	// let inputs: Vec<f32> = vec![0.0, 1.0];

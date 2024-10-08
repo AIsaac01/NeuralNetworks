@@ -6,45 +6,27 @@ use iced::widget::{vertical_space, horizontal_space};
 use super::app::{AppPage, Message};
 
 #[derive(Default)]
-pub struct MainMenu;
+pub struct CreateMenu;
 
-impl AppPage for MainMenu {
+impl AppPage for CreateMenu {
 	fn view(&self) -> Column<Message> {
 		column![
 			vertical_space(),
 			row![
 				horizontal_space(),
-				button("Create Network").on_press(Message::GoToCreateNetwork),
+				button("Main Menu").on_press(Message::GoToMainMenu),
 				horizontal_space()
 			],
 			vertical_space(),
-			row![
-				horizontal_space(),
-				button("Train Network").on_press(Message::GoToTrainNetwork),
-				horizontal_space()
-			],
-			vertical_space(),
-			row![
-				horizontal_space(),
-				button("Test Network").on_press(Message::GoToTestNetwork),
-				horizontal_space()
-			],
-			vertical_space(),
-			row![
-				horizontal_space(),
-				button("Modify Network").on_press(Message::GoToModifyNetwork),
-				horizontal_space()
-			],
-			vertical_space()
 		]
 	}
 
 	fn update(&self, message: &Message) {
 		match message {
-			Message::GoToMainMenu => (), // already in main menu, this conditional will never execute
-			Message::GoToCreateNetwork => {
-				println!("Navigtaing to Create Network Window!");
+			Message::GoToMainMenu => {
+				println!("Navigtaing to Main Menu!");
 			},
+			Message::GoToCreateNetwork => (), // already in create menu, this conditional will never execute
 			Message::GoToTrainNetwork => {
 				println!("Navigtaing to Train Network Window!");
 			},
