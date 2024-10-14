@@ -36,6 +36,7 @@ impl AppPage for ModifyMenu {
 				println!("Navigtaing to Test Network Window!");
 			},
 			Message::GoToModifyNetwork => (),  // already in modify menu, this conditional will never execute
+			_ => (),
         }
 	}
 }

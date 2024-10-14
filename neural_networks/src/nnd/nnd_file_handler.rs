@@ -3,6 +3,14 @@ use std::fs::File;
 use std::io::Write;
 use crate::neural_network::network::*;
 
+pub fn nnd_exists(filepath: &str) -> bool {
+	let exists = File::open(filepath);
+	match exists {
+		Ok(f) => return true,
+		Err(e) => return false
+	}
+}
+
 pub fn read_nnd(filepath: &str) -> Option<Network> {
 	let contents = match fs::read_to_string(filepath) {
 		Ok(c) => c,

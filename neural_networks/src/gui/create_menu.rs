@@ -6,12 +6,30 @@ use iced::widget::{vertical_space, horizontal_space};
 use super::app::{AppPage, Message};
 
 #[derive(Default)]
-pub struct CreateMenu;
+pub struct CreateMenu {
+	big_box_text: String
+}
 
 impl AppPage for CreateMenu {
 	fn view(&self) -> Column<Message> {
 		column![
 			vertical_space(),
+			// big box
+			scrollable(column![
+				text(self.big_box_text.clone()),
+				]),
+			vertical_space(),
+			row![
+				horizontal_space(),
+				column![
+					text("Enter layer size (number of neurons)"),
+					text_input("Enter layer size here ..." ,&self.big_box_text).on_input(Message::Create_UpdateBigBox),
+					button("add layer")
+				],
+				horizontal_space(),
+			],
+			vertical_space(),
+			// main menu button
 			row![
 				horizontal_space(),
 				button("Main Menu").on_press(Message::GoToMainMenu),
@@ -26,16 +44,11 @@ impl AppPage for CreateMenu {
 			Message::GoToMainMenu => {
 				println!("Navigtaing to Main Menu!");
 			},
-			Message::GoToCreateNetwork => (), // already in create menu, this conditional will never execute
-			Message::GoToTrainNetwork => {
-				println!("Navigtaing to Train Network Window!");
+			Message::Create_UpdateBigBox(content) => {
+				println!("{}", content);
+				// handle input
 			},
-			Message::GoToTestNetwork => {
-				println!("Navigtaing to Test Network Window!");
-			},
-			Message::GoToModifyNetwork => {
-				println!("Navigtaing to Modify Network Window!");
-			},
+			_ => ()
         }
 	}
 }

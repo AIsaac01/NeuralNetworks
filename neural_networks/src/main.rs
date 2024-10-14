@@ -12,10 +12,10 @@ use nnd::nnd_file_handler::*;
 use iced::Theme;
 
 fn main() {
-	// let path: &str = r"C:\Users\Ayham\Programming\NeuralNetworks\NeuralNetworks\nnd_files\my_network_2.nnd";
-	// let n: Network = read_nnd(path).unwrap();
-	// //n.print_neuron_vals();
-
+	// // let path: &str = r"C:\Users\Ayham\Programming\NeuralNetworks\NeuralNetworks\nnd_files\my_network_2.nnd";
+	// // let n: Network = read_nnd(path).unwrap();
+	// // //n.print_neuron_vals();
+	//
 	let _ = iced::application("Neural Network App", App::update, App::view)
 		.theme(|_| Theme::Dark)
         .centered()
@@ -97,9 +97,9 @@ fn main() {
 	//
 	// // train to do XOR
 	// // 1, 0 -> 1
-	// let inputs: Vec<f32> = vec![1.0, 0.0];
+	// let inputs: Vec<f32> = vec![0.0, 1.0];
 	// my_net.attach_inputs(inputs);
-	// let expected_output: Vec<f32> = vec!(5.0);
+	// let expected_output: Vec<f32> = vec!(1.0);
 	//
 	// my_net.forward_prop();
 	// my_net.print_neuron_vals();
@@ -110,7 +110,7 @@ fn main() {
 	// }
 	// let w1 = my_net.save_weights();
 	// my_net.print_neuron_vals();
-
+	//
 	//
 	// // 0, 1 -> 1
 	// let inputs: Vec<f32> = vec![0.0, 1.0];

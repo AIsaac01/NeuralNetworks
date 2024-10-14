@@ -33,6 +33,8 @@ pub enum Message {
 	GoToTrainNetwork,
 	GoToTestNetwork,
 	GoToModifyNetwork,
+
+	Create_UpdateBigBox(String),
 }
 
 pub struct App {
@@ -42,7 +44,6 @@ pub struct App {
 	train_menu: Option<TrainMenu>,
 	test_menu: Option<TestMenu>,
 	modify_menu: Option<ModifyMenu>
-
 }
 
 impl Default for App {

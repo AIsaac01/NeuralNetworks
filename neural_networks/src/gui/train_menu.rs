@@ -36,6 +36,7 @@ impl AppPage for TrainMenu {
 			Message::GoToModifyNetwork => {
 				println!("Navigtaing to Modify Network Window!");
 			},
+			_ => (),
         }
 	}
 }
