@@ -43,7 +43,7 @@ impl AppPage for MainMenu {
 		]
 	}
 
-	fn update(&self, message: &Message) {
+	fn update(&mut self, message: &Message) {
 		match message {
 			Message::GoToMainMenu => (), // already in main menu, this conditional will never execute
 			Message::GoToCreateNetwork => {

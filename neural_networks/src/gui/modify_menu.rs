@@ -21,7 +21,7 @@ impl AppPage for ModifyMenu {
 		]
 	}
 
-	fn update(&self, message: &Message) {
+	fn update(&mut self, message: &Message) {
 		match message {
 			Message::GoToMainMenu => {
 				println!("Navigtaing to Main Menu!");

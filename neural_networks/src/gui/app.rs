@@ -12,7 +12,7 @@ use super::modify_menu::*;
 // describes what functions a page, such as main menu, should include
 pub trait AppPage {
 	fn view(&self) -> Column<Message>;
-	fn update(&self, message: &Message);
+	fn update(&mut self, message: &Message);
 }
 
 // describes which menu/sub-menu the app is in
@@ -34,7 +34,8 @@ pub enum Message {
 	GoToTestNetwork,
 	GoToModifyNetwork,
 
-	Create_UpdateBigBox(String),
+	Create_UpdateBigBox,
+	Create_UpdateLayerSizeInput(String),
 }
 
 pub struct App {
@@ -105,10 +106,10 @@ impl App {
 
 		match self.state {
 			AppState::InMainMenu => self.main_menu.update(&message),
-			AppState::InCreateMenu => self.create_menu.as_ref().unwrap().update(&message),
-			AppState::InTrainMenu => self.train_menu.as_ref().unwrap().update(&message),
-			AppState::InTestMenu => self.test_menu.as_ref().unwrap().update(&message),
-			AppState::InModifyMenu => self.modify_menu.as_ref().unwrap().update(&message)
+			AppState::InCreateMenu => self.create_menu.as_mut().unwrap().update(&message),
+			AppState::InTrainMenu => self.train_menu.as_mut().unwrap().update(&message),
+			AppState::InTestMenu => self.test_menu.as_mut().unwrap().update(&message),
+			AppState::InModifyMenu => self.modify_menu.as_mut().unwrap().update(&message)
 		};
     }
 }
