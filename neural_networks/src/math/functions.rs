@@ -22,6 +22,7 @@ pub fn relu(val: f32) -> f32 {
 	val
 }
 
+// derivative of ReLU function
 pub fn d_relu(val: f32) -> f32 {
 	if val < 0.0 {
 		return 0.0;
