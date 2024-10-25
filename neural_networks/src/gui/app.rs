@@ -1,6 +1,5 @@
-use iced::widget::{Column, column};
-use crate::neural_network::network::*;
-use crate::nnd::nnd_file_handler::*;
+use iced::widget::Column;
+use crate::neural_network::network::{ActivationFunction, LossFunction};
 
 use super::main_menu::*;
 use super::create_menu::*;
@@ -36,6 +35,21 @@ pub enum Message {
 
 	Create_UpdateBigBox,
 	Create_UpdateLayerSizeInput(String),
+	Create_PickActvFunc(ActivationFunction),
+	Create_PickLossFunc(LossFunction),
+	Create_RemoveRecentLayer,
+	Create_ClearAll,
+	Create_ChooseFilename(String),
+	Create_ChoosePath(String),
+	Create_CreateNetwork,
+
+	Train_UpdateNNFilePath(String),
+	Train_UpdateInpFilePath(String),
+	Train_UpdateOutFilePath(String),
+	Train_UpdateEpochs(String),
+	Train_UpdateLearningRate(String),
+	Train_CheckSaveWeights(bool),
+	Train_TrainNetwork,
 }
 
 pub struct App {

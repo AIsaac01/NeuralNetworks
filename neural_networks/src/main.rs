@@ -1,27 +1,85 @@
 mod gui;
 mod math;
 mod neural_network;
-mod nnd;
+mod file_handling;
 
 use gui::app::App;
 use gui::main_menu::*;
 use math::functions;
 use neural_network::network::*;
-use nnd::nnd_file_handler::*;
+use file_handling::nnd_file_handler::*;
+use file_handling::list_file_handler::*;
+
+use std::fs;
+use std::fs::File;
+use std::io::Write;
 
 use iced::Theme;
 
 fn main() {
-	// // let path: &str = r"C:\Users\Ayham\Programming\NeuralNetworks\NeuralNetworks\nnd_files\my_network_2.nnd";
-	// // let n: Network = read_nnd(path).unwrap();
-	// // //n.print_neuron_vals();
-	//
+	// let path: &str = r"C:\Users\Ayham\Programming\NeuralNetworks\NeuralNetworks\neural_networks\inputs\test";
+	// let path_out: &str = r"C:\Users\Ayham\Programming\NeuralNetworks\NeuralNetworks\neural_networks\expected_outputs\test_output";
+	// let inp: Vec<f32> = vec![0.0, 1.0];
+	// let out: Vec<f32> = vec![1.0];
+	// create_list_file(path, inp);
+	// create_list_file(path_out, out);
+	// let n: Vec<f32> = read_list_file(path).unwrap();
+	// println!("{:?}", n);
+	// n.print_neuron_vals();
+
 	let _ = iced::application("Neural Network App", App::update, App::view)
 		.theme(|_| Theme::Dark)
         .centered()
         .run();
-
-
+	// //
+	// // read inputs for 3
+	// let contents = match fs::read_to_string(r"C:\Users\Ayham\Programming\NeuralNetworks\NeuralNetworks\neural_networks\inputs\three") {
+	// 	Ok(c) => c,
+    //     Err(e) => {
+	// 		println!("ERROR: Invalid File Path!");
+	// 		return;
+	// 	},
+	// };
+	//
+	// let mut inputs: Vec<f32> = Vec::new();
+	// for num in contents.split(" ") {
+	// 	// let n = num.parse();
+	// 	match num.parse::<u8>() {
+	// 		Err(err) => (),
+	// 		Ok(num) => inputs.push( num as f32 )
+	// 	};
+	// }
+	//
+	// // read inputs and outputs for 3
+	// let contents = match fs::read_to_string(r"C:\Users\Ayham\Programming\NeuralNetworks\NeuralNetworks\neural_networks\expected_outputs\three") {
+	// 	Ok(c) => c,
+    //     Err(e) => {
+	// 		println!("ERROR: Invalid File Path!");
+	// 		return;
+	// 	},
+	// };
+	//
+	// let mut expected_outputs: Vec<f32> = Vec::new();
+	// for num in contents.split(" ") {
+	// 	match num.parse::<u8>() {
+	// 		Err(err) => (),
+	// 		Ok(num) => expected_outputs.push( num as f32 )
+	// 	};
+	// }
+	//
+	// let mut network = read_nnd(r"C:\Users\Ayham\Programming\NeuralNetworks\NeuralNetworks\nnd_files\three.nnd").unwrap();
+	// //network.print_neuron_vals();
+	// network.attach_inputs(inputs);
+	// network.set_learning_rate(0.05);
+	// //
+	// for epoch in 0..10 {
+	// 	network.forward_prop();
+	// 	network.back_prop(expected_outputs.clone());
+	// 	println!("Finished Epoch {}!", epoch);
+	// }
+	//
+	// network.forward_prop();
+	// network.print_output_vals();
 	// // initialize network
 	// let mut my_net = Network::new(0.05);
 	//

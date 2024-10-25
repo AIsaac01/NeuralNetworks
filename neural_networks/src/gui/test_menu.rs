@@ -1,6 +1,6 @@
 use iced::widget::{Column, TextInput, Row, column, text_input, row, button, text, scrollable};
 use crate::neural_network::network::*;
-use crate::nnd::nnd_file_handler::*;
+use crate::file_handling::nnd_file_handler::*;
 use iced::widget::{vertical_space, horizontal_space};
 
 use super::app::{AppPage, Message};

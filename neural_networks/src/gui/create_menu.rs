@@ -1,7 +1,8 @@
 use iced::widget::{Column, TextInput, Row, column, text_input, row, button, text, scrollable};
+use iced::widget::pick_list;
 use iced::Theme;
 use crate::neural_network::network::*;
-use crate::nnd::nnd_file_handler::*;
+use crate::file_handling::nnd_file_handler::*;
 use iced::widget::{vertical_space, horizontal_space};
 
 use super::app::{AppPage, Message};
@@ -13,18 +14,30 @@ pub struct CreateMenu {
 	layers: Vec<u32>,
 	big_box_text: String,
 	big_box_contents: Vec<String>,
-	layer_size_input: String
+	layer_size_input: String,
+	activation_func: Option<ActivationFunction>,
+	loss_func: Option<LossFunction>,
+	filename: String,
+	path: String,
+	notification: String
 }
 
 impl AppPage for CreateMenu {
 	fn view(&self) -> Column<Message> {
+		let actv_funcs = [
+			ActivationFunction:: Sigmoid,
+			ActivationFunction:: ReLU,
+		];
+		let loss_funcs = [
+			LossFunction::MeanSquareError
+		];
 		column![
 			text(self.big_box_text.clone()).height(220),
 			column![
 				button("Scroll Up"),
 				button("Scroll Down"),
-				button("Remove Most Recent Layer"),
-				button("Clear All"),
+				button("Remove Most Recent Layer").on_press(Message::Create_RemoveRecentLayer),
+				button("Clear All").on_press(Message::Create_ClearAll),
 			],
 			vertical_space(),
 			row![
@@ -37,14 +50,26 @@ impl AppPage for CreateMenu {
 				horizontal_space(),
 				column![
 					text("Enter Activation Function"),
-					// Use Drop Down List
-					// text_input("Enter layer size here ..." , &self.layer_size_input).on_input(Message::Create_UpdateLayerSizeInput),
-					button("update").on_press(Message::Create_UpdateBigBox),
+					pick_list(
+				        actv_funcs,
+				        self.activation_func,
+				        Message::Create_PickActvFunc,
+				    ).placeholder("Select Activation Function"),
 				],
 				horizontal_space(),
+				column![
+					text("Enter Loss Function"),
+					pick_list(
+				        loss_funcs,
+				        self.loss_func,
+				        Message::Create_PickLossFunc,
+				    ).placeholder("Select Loss Function"),
+				],
 			],
 			vertical_space(),
-			button("Create Network"),
+			text_input("Enter File name,.." , &self.filename).on_input(Message::Create_ChooseFilename),
+			text_input("Enter File Path..." , &self.path).on_input(Message::Create_ChoosePath),
+			button("Create Network").on_press(Message::Create_CreateNetwork),
 			vertical_space(),
 			// main menu button
 			row![
@@ -52,6 +77,8 @@ impl AppPage for CreateMenu {
 				button("Main Menu").on_press(Message::GoToMainMenu),
 				horizontal_space()
 			],
+			vertical_space(),
+			text(self.notification.clone()),
 			vertical_space(),
 		]
 	}
@@ -96,9 +123,93 @@ impl AppPage for CreateMenu {
 
 
 			},
+			Message::Create_RemoveRecentLayer => {
+				self.layers.pop();
+				self.big_box_contents.pop();
+
+				// reused code: BAD, U LAZY LITTLE SHIT
+				self.big_box_text = String::new();
+				let mut i: u8 = 0;
+				for line in self.big_box_contents.iter().rev() {
+					if i < MAX_BIG_BOX_LINES {
+						self.big_box_text.push_str(line.as_str());
+						i += 1;
+					}
+					else {
+						break;
+					}
+				}
+			},
+			Message::Create_ClearAll => {
+				self.layers.clear();
+				self.big_box_contents.clear();
+				self.big_box_text = String::new();
+			},
 			Message::Create_UpdateLayerSizeInput(content) => {
 				self.layer_size_input = String::from(content);
 			},
+			Message::Create_PickActvFunc(content) => {
+				self.activation_func = Some(*content);
+			},
+			Message::Create_PickLossFunc(content) => {
+				self.loss_func = Some(*content);
+			},
+			Message::Create_ChooseFilename(content) => {
+				self.filename = String::from(content);
+			}
+			Message::Create_ChoosePath(content) => {
+				self.path = String::from(content);
+			},
+			Message::Create_CreateNetwork => {
+				// heavy lifting here
+
+				// check if filepath is right
+				let mut f: String = String::new();
+				f.push_str(self.path.as_str());
+				f.push('\\');
+				f.push_str(self.filename.as_str());
+				f.push_str(".nnd");
+				let exists = nnd_exists(f.as_str());
+				if exists {
+					self.notification = String::from("Error: NND File already Exists!");
+					return;
+				}
+
+				// construct Network, initial learning rate is 0.0
+				let mut new_network: Network = Network::new(0.0);
+
+				// create neurons from each layer
+				for layer_num in 0..self.layers.len() {
+					let mut neurons: Vec<Neuron> = Vec::new();
+					for index in 0..self.layers[layer_num] {
+						neurons.push( Neuron::new(layer_num, index as usize, self.activation_func, None) );
+					}
+					if (layer_num == self.layers.len() - 1) && self.loss_func.is_some() {
+						for mut neuron in &mut neurons {
+							neuron.set_loss_func(self.loss_func);
+						}
+					}
+					new_network.add_layer(neurons);
+				}
+
+				// fully connect the network through links
+				for layer_num in 0..self.layers.len()-1 {
+					let num_neurons_cur = self.layers[layer_num];
+					let num_neurons_next = self.layers[layer_num+1];
+
+					for i in 0..num_neurons_cur {
+						for j in 0..num_neurons_next {
+							new_network.add_link( Link::new((layer_num as usize, i as usize), (layer_num+1 as usize, j as usize), 0.5) );
+						}
+					}
+				}
+
+				// create the file
+				write_nnd(f.as_str(), new_network);
+
+				// nothing caught on fire
+				self.notification = String::from("Success!");
+			}
 			_ => ()
         }
 	}

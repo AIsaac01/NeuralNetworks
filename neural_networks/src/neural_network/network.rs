@@ -1,17 +1,37 @@
+// use functions defined in src/math/functions.rs
 use crate::functions::*;
 
-// coordinate for neuron is (layer number, neuron number), 0-indexed
+// defines neuron coordinate within a network: (layer number, neuron number), 0-indexed
 type Coord = (usize, usize);
 
-/****************** Enums ******************/
-
+// neuron activation function
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ActivationFunction {
 	Sigmoid,
 	ReLU
 }
 
+impl std::fmt::Display for ActivationFunction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            Self::Sigmoid => "Sigmoid",
+            Self::ReLU => "ReLU",
+        })
+    }
+}
+
+// neuron loss function, typically used in outputs
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LossFunction {
 	MeanSquareError
+}
+
+impl std::fmt::Display for LossFunction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            Self::MeanSquareError => "Mean Square Error (MSE)",
+        })
+    }
 }
 
 /****************** Structs ******************/
@@ -20,19 +40,21 @@ pub struct Neuron {
 	location: Coord,
 	actv_func: Option<ActivationFunction>,
 	loss_func: Option<LossFunction>,
-	value: f32,
+	value: f32, // value before activation
 	activated_value: f32,
 	loss: f32
 }
 
+// A link is a connection between two neurons
 pub struct Link {
 	from: Coord,
 	to: Coord,
 	weight: f32
 }
 
+// Defines an entire neural network
 pub struct Network {
-	matrix: Vec<Vec<Neuron>>,
+	matrix: Vec<Vec<Neuron>>, // 2d array of [layer][neuron]
 	links: Vec<Link>,
 	learning_rate: f32
 }
@@ -40,6 +62,7 @@ pub struct Network {
 /****************** Implementations ******************/
 
 impl Neuron {
+	// returns a new Neuron object
 	pub fn new(layer_num: usize, index: usize, actv: Option<ActivationFunction>, loss: Option<LossFunction>) -> Self {
 		Neuron {
 			location: (layer_num, index),
@@ -51,23 +74,23 @@ impl Neuron {
 		}
 	}
 
-	pub fn set_actv_func(&mut self, func: ActivationFunction) {
-		self.actv_func = Some(func);
+	pub fn set_actv_func(&mut self, func: Option<ActivationFunction>) {
+		self.actv_func = func;
 	}
 
-	pub fn set_loss_func(&mut self, func: LossFunction) {
-		self.loss_func = Some(func);
+	pub fn set_loss_func(&mut self, func: Option<LossFunction>) {
+		self.loss_func = func;
 	}
 
 	pub fn update_val(&mut self, new_val: f32) {
 		self.value = new_val;
 	}
 
+	// applies activation function to neuron value and updates 'activated_value'
 	pub fn activate(&mut self) {
 		match &self.actv_func {
 			None => {
 				self.activated_value = self.value;
-				//println!("No activation function, activated value = {}", self.activated_value);
 			},
 			Some(func) => {
 				match func {
@@ -78,6 +101,7 @@ impl Neuron {
 		}
 	}
 
+	// applies the derivative of activation function, used in backprop
 	pub fn d_activate(&mut self) -> f32 {
 		match &self.actv_func {
 			None => return 1.0,
@@ -90,11 +114,11 @@ impl Neuron {
 		}
 	}
 
+	// calculates loss of this neuron against a given value
 	pub fn calculate_loss(&mut self, expected_output: f32) {
 		match &self.loss_func {
 			None => {
 				println!("No Loss Func, Skipping calculate_loss()");
-				return;
 			},
 			Some(func) => {
 				match func {
@@ -106,6 +130,7 @@ impl Neuron {
 		}
 	}
 
+	// returns the string representatino of given neuron
 	pub fn to_string(&self) -> String {
 		let mut s = String::new();
 		s.push_str(self.location.0.to_string().as_str());
@@ -135,6 +160,7 @@ impl Neuron {
 
 
 impl Link {
+	// returns a new link object
 	pub fn new(f: Coord, t: Coord, wht: f32) -> Self {
 		Link {
 			from: f,
@@ -143,6 +169,7 @@ impl Link {
 		}
 	}
 
+	// string representation of link
 	pub fn to_string(&self) -> String {
 		let mut s = String::new();
 		s.push_str(self.from.0.to_string().as_str());
@@ -160,6 +187,7 @@ impl Link {
 
 
 impl Network {
+	// creates a new Network object
 	pub fn new(lr: f32) -> Network {
 		Network {
 			matrix: Vec::new(),
@@ -173,15 +201,21 @@ impl Network {
 		self.learning_rate = lr;
 	}
 
+	// appends a new layer to the network
 	pub fn add_layer(&mut self, layer: Vec<Neuron>) {
-		self.matrix.push(layer)
+		self.matrix.push(layer);
 	}
 
+	// creates a new connection in the network
 	pub fn add_link(&mut self, e: Link) {
 		self.links.push(e);
 	}
 
+	// copies values from an input array to the input layer, as long as they match in size
 	pub fn attach_inputs(&mut self, inputs: Vec<f32>) {
+		if self.matrix[0].len() == 0 {
+			self.matrix.remove(0);
+		}
 		assert_eq!( inputs.len(), self.matrix[0].len() );
 		for i in 0..inputs.len() {
 			self.matrix[0][i].value = inputs[i];
@@ -241,12 +275,13 @@ impl Network {
 
 		// calculate loss for each output neuron and backpropagate loss
 		for i in 0..num_outputs {
-			// clear all loss values
-			for layer in self.matrix.iter_mut() {
-				for neuron in layer.iter_mut() {
-					neuron.loss = 0.0;
-				}
-			}
+			// This commented out code might not be necessary because I dont think loss values are overwritten anyways
+			// // clear all loss values
+			// for layer in self.matrix.iter_mut() {
+			// 	for neuron in layer.iter_mut() {
+			// 		neuron.loss = 0.0;
+			// 	}
+			// }
 			self.matrix[output_layer_index][i].calculate_loss( expected_outputs[i] );
 			self.prop_loss( (output_layer_index, i) );
 			self.update_weights( (output_layer_index, i) );
@@ -286,6 +321,7 @@ impl Network {
 		}
 	}
 
+	// returns a list of all network weights
 	pub fn save_weights(&self) -> Vec<f32> {
 		let mut weights: Vec<f32> = Vec::new();
 		for link in self.links.iter() {
@@ -294,6 +330,7 @@ impl Network {
 		weights
 	}
 
+	// updates all of the weights in the network from a list of weights
 	pub fn attach_weights(&mut self, weights: Vec<f32>) {
 		// make sure number of input weights matches number of network weights
 		assert_eq!(self.links.len(), weights.len());
@@ -302,6 +339,7 @@ impl Network {
 		}
 	}
 
+	// for debugging, print all neuron values in a network
 	pub fn print_neuron_vals(&self) {
 		println!("\n\n***************** ITERATION *****************");
 		for layer in self.matrix.iter() {
@@ -313,6 +351,18 @@ impl Network {
 		}
 	}
 
+	// for debugging, print output neuron values
+	pub fn print_output_vals(&self) {
+		println!("\n\n***************** Outputs *****************");
+		for layer in self.matrix.iter().rev() {
+			for neuron in layer.iter() {
+				println!("{} - activated value = {} - loss = {}", neuron.value, neuron.activated_value, neuron.loss);
+			}
+			return;
+		}
+	}
+
+	// string representatino of a neural network
 	pub fn to_string(&self) -> String {
 		let mut contents = String::new();
 		contents.push_str("Neurons\n");
@@ -337,7 +387,6 @@ impl Network {
 			contents.push(' ');
 		}
 		contents.pop();
-		println!("{}", contents);
 		contents
 	}
 }
