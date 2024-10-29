@@ -50,6 +50,10 @@ pub enum Message {
 	Train_UpdateLearningRate(String),
 	Train_CheckSaveWeights(bool),
 	Train_TrainNetwork,
+
+	Test_UpdateNNFilePath(String),
+	Test_UpdateInpFilePath(String),
+	Test_TestNetwork,
 }
 
 pub struct App {

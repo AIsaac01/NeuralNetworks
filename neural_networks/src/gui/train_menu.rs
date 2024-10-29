@@ -1,25 +1,24 @@
-use iced::widget::{Column, TextInput, Row, column, text_input, row, button, text, scrollable};
+use iced::widget::{Column, column, text_input, row, button, text, vertical_space,
+				   horizontal_space, progress_bar, checkbox};
+
 use crate::neural_network::network::*;
 use crate::file_handling::nnd_file_handler::*;
-use iced::widget::{vertical_space, horizontal_space};
-use iced::widget::progress_bar;
-use iced::widget::checkbox;
+use crate::read_list_file;
 
 use super::app::{AppPage, Message};
-use crate::read_list_file;
 
 #[derive(Default)]
 pub struct TrainMenu {
-	nn_filepath: String,
-	inp_filepath: String,
-	out_filepath: String,
-	epochs: String,
-	learning_rate: String,
-	progress: f32,
-	notification: String,
-	inputs: Vec<f32>,
-	expected_outputs: Vec<f32>,
-	save_weights: bool,
+	nn_filepath: String,			// text input for nnd file
+	inp_filepath: String,			// text input for input file
+	out_filepath: String,			// text input for output file
+	epochs: String,					// text input for epochs
+	learning_rate: String,			// text input for learning rate
+	progress: f32,					// progress bar value (range is 0 -> 100 as defined below)
+	notification: String,			// text output for notification bar
+	inputs: Vec<f32>,				// Numbers read from input file
+	expected_outputs: Vec<f32>,		// Numbers read from output file
+	save_weights: bool,				// Saves weights at end of training if checkbox is set true
 }
 
 impl AppPage for TrainMenu {
@@ -113,6 +112,7 @@ impl AppPage for TrainMenu {
 				network.attach_inputs(inputs);
 
 				// cycle through epochs
+				self.progress = 0.0;
 				let epochs: u32 = self.epochs.parse().unwrap();
 				for i in 0..epochs {
 					network.forward_prop();
