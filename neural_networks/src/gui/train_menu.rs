@@ -9,9 +9,9 @@ use super::app::{AppPage, Message};
 
 #[derive(Default)]
 pub struct TrainMenu {
-	nn_filepath: String,			// text input for nnd file
-	inp_filepath: String,			// text input for input file
-	out_filepath: String,			// text input for output file
+	nn_filename: String,			// text input for nnd file
+	inp_filename: String,			// text input for input file
+	out_filename: String,			// text input for output file
 	epochs: String,					// text input for epochs
 	learning_rate: String,			// text input for learning rate
 	progress: f32,					// progress bar value (range is 0 -> 100 as defined below)
@@ -25,14 +25,14 @@ impl AppPage for TrainMenu {
 	fn view(&self) -> Column<Message> {
 		column![
 			vertical_space(),
-			text("NND file path:"),
-			text_input("Enter NND Filepath here ...", &self.nn_filepath).on_input(Message::Train_UpdateNNFilePath),
+			text("NND file name:"),
+			text_input("Enter NND File name here ...", &self.nn_filename).on_input(Message::Train_UpdateNNFilename),
 			vertical_space(),
-			text("Input file path:"),
-			text_input("Enter Input Filepath Here ...", &self.inp_filepath).on_input(Message::Train_UpdateInpFilePath),
+			text("Input file name:"),
+			text_input("Enter Input File name Here ...", &self.inp_filename).on_input(Message::Train_UpdateInpFilename),
 			vertical_space(),
-			text("Expected Output file path:"),
-			text_input("Enter Expected Outut Filepath Here ...", &self.out_filepath).on_input(Message::Train_UpdateOutFilePath),
+			text("Expected Output file name:"),
+			text_input("Enter Expected Outut File name Here ...", &self.out_filename).on_input(Message::Train_UpdateOutFilename),
 			vertical_space(),
 			text("Training Epochs:"),
 			text_input("Enter Epochs ...", &self.epochs).on_input(Message::Train_UpdateEpochs),
@@ -45,6 +45,8 @@ impl AppPage for TrainMenu {
 			button("Train Network").on_press(Message::Train_TrainNetwork),
 			vertical_space(),
 			progress_bar(0.0..=100.0, self.progress),
+			vertical_space(),
+			text(self.notification.clone()),
 			vertical_space(),
 			row![
 				horizontal_space(),
@@ -60,14 +62,14 @@ impl AppPage for TrainMenu {
 			Message::GoToMainMenu => {
 				println!("Navigtaing to Main Menu!");
 			},
-			Message::Train_UpdateNNFilePath(content) => {
-				self.nn_filepath = String::from(content);
+			Message::Train_UpdateNNFilename(content) => {
+				self.nn_filename = String::from(content);
 			},
-			Message::Train_UpdateInpFilePath(content) => {
-				self.inp_filepath = String::from(content);
+			Message::Train_UpdateInpFilename(content) => {
+				self.inp_filename = String::from(content);
 			},
-			Message::Train_UpdateOutFilePath(content) => {
-				self.out_filepath = String::from(content);
+			Message::Train_UpdateOutFilename(content) => {
+				self.out_filename = String::from(content);
 			},
 			Message::Train_UpdateEpochs(content) => {
 				self.epochs = String::from(content);
@@ -79,8 +81,19 @@ impl AppPage for TrainMenu {
 				self.save_weights = *b;
 			},
 			Message::Train_TrainNetwork => {
+				let mut nn_file = String::new();
+				nn_file.push_str("../nnd_files/");
+				nn_file.push_str(&self.nn_filename);
+				nn_file.push_str(".nnd");
+				let mut inp_file = String::new();
+				inp_file.push_str("../inputs/");
+				inp_file.push_str(&self.inp_filename);
+				let mut out_file = String::new();
+				out_file.push_str("../expected_outputs/");
+				out_file.push_str(&self.out_filename);
+
 				// read and validate all files
-				let mut network: Network = match read_nnd(&self.nn_filepath) {
+				let mut network: Network = match read_nnd(&nn_file) {
 					None => {
 						self.notification = String::from("ERROR: Could Not Read NND File, Check console output");
 						return;
@@ -88,7 +101,7 @@ impl AppPage for TrainMenu {
 					Some(n) => n
 				};
 
-				let inputs: Vec<f32> = match read_list_file(&self.inp_filepath) {
+				let inputs: Vec<f32> = match read_list_file(&inp_file) {
 					None => {
 						self.notification = String::from("ERROR: Could Not Read Input File, Check console output");
 						return;
@@ -96,7 +109,7 @@ impl AppPage for TrainMenu {
 					Some(n) => n
 				};
 
-				let expected_outputs: Vec<f32> = match read_list_file(&self.out_filepath) {
+				let expected_outputs: Vec<f32> = match read_list_file(&out_file) {
 					None => {
 						self.notification = String::from("ERROR: Could Not Read Output File, Check console output");
 						return;
@@ -126,11 +139,12 @@ impl AppPage for TrainMenu {
 
 				// save network if user wants to
 				if self.save_weights {
-					let mut new_path = self.nn_filepath.clone();
-					for _ in 0..4 {
-						new_path.pop();
-					}
+					let mut new_path = String::new();
+					new_path.push_str("../nnd_files/");
+					new_path.push_str(&self.nn_filename);
 					new_path.push_str("_trained.nnd");
+					// TODO: remove old file
+					// write new one
 					write_nnd(&new_path, network);
 				}
 			},

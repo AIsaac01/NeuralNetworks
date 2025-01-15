@@ -40,19 +40,18 @@ pub enum Message {
 	Create_RemoveRecentLayer,
 	Create_ClearAll,
 	Create_ChooseFilename(String),
-	Create_ChoosePath(String),
 	Create_CreateNetwork,
 
-	Train_UpdateNNFilePath(String),
-	Train_UpdateInpFilePath(String),
-	Train_UpdateOutFilePath(String),
+	Train_UpdateNNFilename(String),
+	Train_UpdateInpFilename(String),
+	Train_UpdateOutFilename(String),
 	Train_UpdateEpochs(String),
 	Train_UpdateLearningRate(String),
 	Train_CheckSaveWeights(bool),
 	Train_TrainNetwork,
 
-	Test_UpdateNNFilePath(String),
-	Test_UpdateInpFilePath(String),
+	Test_UpdateNNFilename(String),
+	Test_UpdateInpFilename(String),
 	Test_TestNetwork,
 }
 

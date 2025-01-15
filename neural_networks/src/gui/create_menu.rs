@@ -18,7 +18,6 @@ pub struct CreateMenu {
 	activation_func: Option<ActivationFunction>,
 	loss_func: Option<LossFunction>,
 	filename: String,
-	path: String,
 	notification: String
 }
 
@@ -68,7 +67,6 @@ impl AppPage for CreateMenu {
 			],
 			vertical_space(),
 			text_input("Enter File name,.." , &self.filename).on_input(Message::Create_ChooseFilename),
-			text_input("Enter File Path..." , &self.path).on_input(Message::Create_ChoosePath),
 			button("Create Network").on_press(Message::Create_CreateNetwork),
 			vertical_space(),
 			// main menu button
@@ -156,17 +154,13 @@ impl AppPage for CreateMenu {
 			},
 			Message::Create_ChooseFilename(content) => {
 				self.filename = String::from(content);
-			}
-			Message::Create_ChoosePath(content) => {
-				self.path = String::from(content);
 			},
 			Message::Create_CreateNetwork => {
 				// heavy lifting here
 
 				// check if filepath is right
 				let mut f: String = String::new();
-				f.push_str(self.path.as_str());
-				f.push('\\');
+				f.push_str("../nnd_files/");
 				f.push_str(self.filename.as_str());
 				f.push_str(".nnd");
 				let exists = nnd_exists(f.as_str());

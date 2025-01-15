@@ -34,13 +34,12 @@ pub fn read_list_file(filepath: &str) -> Option<Vec<f32>> {
 	let contents = match fs::read_to_string(filepath) {
 		Ok(c) => c,
         Err(e) => {
-			println!("ERROR: Invalid File Path!");
+			println!("ERROR: Invalid List File Path!");
 			return None;
 		},
 	};
 
 	let mut list: Vec<f32> = Vec::new();
-
 	for num in contents.lines() {
 		match num.parse() {
 			Err(e) => {

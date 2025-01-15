@@ -9,8 +9,8 @@ use super::app::{AppPage, Message};
 
 #[derive(Default)]
 pub struct TestMenu {
-	nn_filepath: String,			// text input for nnd file
-	inp_filepath: String,			// text input for input file
+	nn_filename: String,			// text input for nnd file
+	inp_filename: String,			// text input for input file
 	inputs: Vec<f32>,				// Numbers read from input file
 	notification: String,			// text output for notification bar
 }
@@ -20,13 +20,15 @@ impl AppPage for TestMenu {
 		column![
 			vertical_space(),
 			vertical_space(),
-			text("NND file path:"),
-			text_input("Enter NND Filepath here ...", &self.nn_filepath).on_input(Message::Test_UpdateNNFilePath),
+			text("NND file name:"),
+			text_input("Enter NND File name here ...", &self.nn_filename).on_input(Message::Test_UpdateNNFilename),
 			vertical_space(),
-			text("Input file path:"),
-			text_input("Enter Input Filepath Here ...", &self.inp_filepath).on_input(Message::Test_UpdateInpFilePath),
+			text("Input file name:"),
+			text_input("Enter Input File name Here ...", &self.inp_filename).on_input(Message::Test_UpdateInpFilename),
 			vertical_space(),
 			button("Test Network").on_press(Message::Test_TestNetwork),
+			vertical_space(),
+			text(self.notification.clone()),
 			vertical_space(),
 			row![
 				horizontal_space(),
@@ -42,15 +44,20 @@ impl AppPage for TestMenu {
 			Message::GoToMainMenu => {
 				println!("Navigtaing to Main Menu!");
 			},
-			Message::Test_UpdateNNFilePath(content) => {
-				self.nn_filepath = String::from(content);
+			Message::Test_UpdateNNFilename(content) => {
+				self.nn_filename = String::from(content);
 			},
-			Message::Test_UpdateInpFilePath(content) => {
-				self.inp_filepath = String::from(content);
+			Message::Test_UpdateInpFilename(content) => {
+				self.inp_filename = String::from(content);
 			},
 			Message::Test_TestNetwork => {
 				// read and validate all files
-				let mut network: Network = match read_nnd(&self.nn_filepath) {
+				let mut nnd_filepath = String::new();
+				nnd_filepath.push_str("../nnd_files/");
+				nnd_filepath.push_str(&self.nn_filename);
+				nnd_filepath.push_str(".nnd");
+
+				let mut network: Network = match read_nnd(&nnd_filepath) {
 					None => {
 						self.notification = String::from("ERROR: Could Not Read NND File, Check console output");
 						return;
@@ -58,7 +65,11 @@ impl AppPage for TestMenu {
 					Some(n) => n
 				};
 
-				let inputs: Vec<f32> = match read_list_file(&self.inp_filepath) {
+				let mut inp_file = String::new();
+				inp_file.push_str("../inputs/");
+				inp_file.push_str(&self.inp_filename);
+
+				let inputs: Vec<f32> = match read_list_file(&inp_file) {
 					None => {
 						self.notification = String::from("ERROR: Could Not Read Input File, Check console output");
 						return;
