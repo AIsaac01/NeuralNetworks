@@ -1,9 +1,6 @@
-use iced::widget::{Column, TextInput, Row, column, text_input, row, button, text, scrollable};
-use crate::neural_network::network::*;
-use crate::file_handling::nnd_file_handler::*;
-use iced::widget::{vertical_space, horizontal_space};
+use iced::widget::{Column, column, row, button, vertical_space, horizontal_space};
 
-use super::app::{AppPage, Message};
+use super::app::*;
 
 #[derive(Default)]
 pub struct ModifyMenu;

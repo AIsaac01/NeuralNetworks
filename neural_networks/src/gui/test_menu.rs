@@ -1,11 +1,9 @@
-use iced::widget::{Column, column, text_input, row, button,
-				   text, vertical_space, horizontal_space};
+use iced::widget::{Column, column, text_input, row, button, text, vertical_space, horizontal_space};
 
 use crate::neural_network::network::*;
-use crate::file_handling::nnd_file_handler::*;
-use crate::read_list_file;
+use crate::file_handling::{nnd_file_handler::*, list_file_handler::*};
 
-use super::app::{AppPage, Message};
+use super::app::*;
 
 #[derive(Default)]
 pub struct TestMenu {
@@ -21,12 +19,12 @@ impl AppPage for TestMenu {
 			vertical_space(),
 			vertical_space(),
 			text("NND file name:"),
-			text_input("Enter NND File name here ...", &self.nn_filename).on_input(Message::Test_UpdateNNFilename),
+			text_input("Enter NND File name here ...", &self.nn_filename).on_input(Message::TestUpdateNNFilename),
 			vertical_space(),
 			text("Input file name:"),
-			text_input("Enter Input File name Here ...", &self.inp_filename).on_input(Message::Test_UpdateInpFilename),
+			text_input("Enter Input File name Here ...", &self.inp_filename).on_input(Message::TestUpdateInpFilename),
 			vertical_space(),
-			button("Test Network").on_press(Message::Test_TestNetwork),
+			button("Test Network").on_press(Message::TestTestNetwork),
 			vertical_space(),
 			text(self.notification.clone()),
 			vertical_space(),
@@ -44,13 +42,13 @@ impl AppPage for TestMenu {
 			Message::GoToMainMenu => {
 				println!("Navigtaing to Main Menu!");
 			},
-			Message::Test_UpdateNNFilename(content) => {
+			Message::TestUpdateNNFilename(content) => {
 				self.nn_filename = String::from(content);
 			},
-			Message::Test_UpdateInpFilename(content) => {
+			Message::TestUpdateInpFilename(content) => {
 				self.inp_filename = String::from(content);
 			},
-			Message::Test_TestNetwork => {
+			Message::TestTestNetwork => {
 				// read and validate all files
 				let mut nnd_filepath = String::new();
 				nnd_filepath.push_str("../nnd_files/");
@@ -69,7 +67,7 @@ impl AppPage for TestMenu {
 				inp_file.push_str("../inputs/");
 				inp_file.push_str(&self.inp_filename);
 
-				let inputs: Vec<f32> = match read_list_file(&inp_file) {
+					self.inputs = match read_list_file(&inp_file) {
 					None => {
 						self.notification = String::from("ERROR: Could Not Read Input File, Check console output");
 						return;
@@ -78,7 +76,7 @@ impl AppPage for TestMenu {
 				};
 
 				// attach inputs
-				network.attach_inputs(inputs);
+				network.attach_inputs(self.inputs.clone());
 
 				// forward propagate
 				network.forward_prop();

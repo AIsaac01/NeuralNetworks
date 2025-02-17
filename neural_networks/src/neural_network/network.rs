@@ -1,16 +1,17 @@
 // use functions defined in src/math/functions.rs
-use crate::functions::*;
+use crate::math::functions::*;
 
 // defines neuron coordinate within a network: (layer number, neuron number), 0-indexed
 type Coord = (usize, usize);
 
-// neuron activation function
+// Possible neuron activation functions
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ActivationFunction {
 	Sigmoid,
 	ReLU
 }
 
+// Implementing Display trait for printing
 impl std::fmt::Display for ActivationFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
@@ -20,7 +21,7 @@ impl std::fmt::Display for ActivationFunction {
     }
 }
 
-// neuron loss function, typically used in outputs
+// Possible neuron loss functions, typically used in outputs
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LossFunction {
 	MeanSquareError
@@ -134,9 +135,9 @@ impl Neuron {
 	pub fn to_string(&self) -> String {
 		let mut s = String::new();
 		s.push_str(self.location.0.to_string().as_str());
-		s.push_str("-");
+		s.push_str(" ");
 		s.push_str(self.location.1.to_string().as_str());
-		s.push_str("-");
+		s.push_str(" ");
 		let act: &str = match &self.actv_func {
 			None => "None",
 			Some(a) => match a {
@@ -145,7 +146,7 @@ impl Neuron {
 			}
 		};
 		s.push_str(act);
-		s.push_str("-");
+		s.push_str(" ");
 		let loss: &str = match &self.loss_func {
 			None => "None",
 			Some(a) => match a {
@@ -173,13 +174,13 @@ impl Link {
 	pub fn to_string(&self) -> String {
 		let mut s = String::new();
 		s.push_str(self.from.0.to_string().as_str());
-		s.push_str("-");
+		s.push_str(" ");
 		s.push_str(self.from.1.to_string().as_str());
-		s.push_str("-");
+		s.push_str(" ");
 		s.push_str(self.to.0.to_string().as_str());
-		s.push_str("-");
+		s.push_str(" ");
 		s.push_str(self.to.1.to_string().as_str());
-		s.push_str("-");
+		s.push_str(" ");
 		s.push_str(self.weight.to_string().as_str());
 		s
 	}
@@ -369,7 +370,7 @@ impl Network {
 		for layer in self.matrix.iter() {
 			for neuron in layer.iter() {
 				contents.push_str( &neuron.to_string().as_str() );
-				contents.push(' ');
+				contents.push('|');
 			}
 			contents.pop();
 			contents.push('\n');
@@ -384,7 +385,7 @@ impl Network {
 				layer_num += 1;
 			}
 			contents.push_str( &link.to_string().as_str() );
-			contents.push(' ');
+			contents.push('|');
 		}
 		contents.pop();
 		contents

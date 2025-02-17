@@ -1,11 +1,9 @@
-use iced::widget::{Column, column, text_input, row, button, text, vertical_space,
-				   horizontal_space, progress_bar, checkbox};
+use iced::widget::{Column, column, text_input, row, button, text, vertical_space, horizontal_space, progress_bar, checkbox};
 
 use crate::neural_network::network::*;
-use crate::file_handling::nnd_file_handler::*;
-use crate::read_list_file;
+use crate::file_handling::{nnd_file_handler::*, list_file_handler::*};
 
-use super::app::{AppPage, Message};
+use super::app::*;
 
 #[derive(Default)]
 pub struct TrainMenu {
@@ -26,23 +24,23 @@ impl AppPage for TrainMenu {
 		column![
 			vertical_space(),
 			text("NND file name:"),
-			text_input("Enter NND File name here ...", &self.nn_filename).on_input(Message::Train_UpdateNNFilename),
+			text_input("Enter NND File name here ...", &self.nn_filename).on_input(Message::TrainUpdateNNFilename),
 			vertical_space(),
 			text("Input file name:"),
-			text_input("Enter Input File name Here ...", &self.inp_filename).on_input(Message::Train_UpdateInpFilename),
+			text_input("Enter Input File name Here ...", &self.inp_filename).on_input(Message::TrainUpdateInpFilename),
 			vertical_space(),
 			text("Expected Output file name:"),
-			text_input("Enter Expected Outut File name Here ...", &self.out_filename).on_input(Message::Train_UpdateOutFilename),
+			text_input("Enter Expected Outut File name Here ...", &self.out_filename).on_input(Message::TrainUpdateOutFilename),
 			vertical_space(),
 			text("Training Epochs:"),
-			text_input("Enter Epochs ...", &self.epochs).on_input(Message::Train_UpdateEpochs),
+			text_input("Enter Epochs ...", &self.epochs).on_input(Message::TrainUpdateEpochs),
 			vertical_space(),
 			text("Training Learning Rate:"),
-			text_input("Enter Learning Rate ...", &self.learning_rate).on_input(Message::Train_UpdateLearningRate),
+			text_input("Enter Learning Rate ...", &self.learning_rate).on_input(Message::TrainUpdateLearningRate),
 			vertical_space(),
-			checkbox("Save Weights", self.save_weights).on_toggle(Message::Train_CheckSaveWeights),
+			checkbox("Save Weights", self.save_weights).on_toggle(Message::TrainCheckSaveWeights),
 			vertical_space(),
-			button("Train Network").on_press(Message::Train_TrainNetwork),
+			button("Train Network").on_press(Message::TrainTrainNetwork),
 			vertical_space(),
 			progress_bar(0.0..=100.0, self.progress),
 			vertical_space(),
@@ -62,25 +60,25 @@ impl AppPage for TrainMenu {
 			Message::GoToMainMenu => {
 				println!("Navigtaing to Main Menu!");
 			},
-			Message::Train_UpdateNNFilename(content) => {
+			Message::TrainUpdateNNFilename(content) => {
 				self.nn_filename = String::from(content);
 			},
-			Message::Train_UpdateInpFilename(content) => {
+			Message::TrainUpdateInpFilename(content) => {
 				self.inp_filename = String::from(content);
 			},
-			Message::Train_UpdateOutFilename(content) => {
+			Message::TrainUpdateOutFilename(content) => {
 				self.out_filename = String::from(content);
 			},
-			Message::Train_UpdateEpochs(content) => {
+			Message::TrainUpdateEpochs(content) => {
 				self.epochs = String::from(content);
 			},
-			Message::Train_UpdateLearningRate(content) => {
+			Message::TrainUpdateLearningRate(content) => {
 				self.learning_rate = String::from(content);
 			},
-			Message::Train_CheckSaveWeights(b) => {
+			Message::TrainCheckSaveWeights(b) => {
 				self.save_weights = *b;
 			},
-			Message::Train_TrainNetwork => {
+			Message::TrainTrainNetwork => {
 				let mut nn_file = String::new();
 				nn_file.push_str("../nnd_files/");
 				nn_file.push_str(&self.nn_filename);
@@ -101,7 +99,7 @@ impl AppPage for TrainMenu {
 					Some(n) => n
 				};
 
-				let inputs: Vec<f32> = match read_list_file(&inp_file) {
+					self.inputs = match read_list_file(&inp_file) {
 					None => {
 						self.notification = String::from("ERROR: Could Not Read Input File, Check console output");
 						return;
@@ -109,7 +107,7 @@ impl AppPage for TrainMenu {
 					Some(n) => n
 				};
 
-				let expected_outputs: Vec<f32> = match read_list_file(&out_file) {
+					self.expected_outputs = match read_list_file(&out_file) {
 					None => {
 						self.notification = String::from("ERROR: Could Not Read Output File, Check console output");
 						return;
@@ -122,14 +120,14 @@ impl AppPage for TrainMenu {
 				network.set_learning_rate(lr);
 
 				// attach inputs
-				network.attach_inputs(inputs);
+				network.attach_inputs(self.inputs.clone());
 
 				// cycle through epochs
 				self.progress = 0.0;
 				let epochs: u32 = self.epochs.parse().unwrap();
 				for i in 0..epochs {
 					network.forward_prop();
-					network.back_prop(expected_outputs.clone());
+					network.back_prop(self.expected_outputs.clone());
 					self.progress += ((i as f32) / (epochs as f32)) * 100.0;
 				}
 

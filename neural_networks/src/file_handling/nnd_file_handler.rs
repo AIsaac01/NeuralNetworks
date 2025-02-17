@@ -6,15 +6,15 @@ use crate::neural_network::network::*;
 pub fn nnd_exists(filepath: &str) -> bool {
 	let exists = File::open(filepath);
 	match exists {
-		Ok(f) => return true,
-		Err(e) => return false
+		Ok(_f) => return true,
+		Err(_e) => return false
 	}
 }
 
 pub fn read_nnd(filepath: &str) -> Option<Network> {
 	let contents = match fs::read_to_string(filepath) {
 		Ok(c) => c,
-        Err(e) => {
+        Err(_e) => {
 			println!("ERROR: Invalid File Path!");
 			return None;
 		},
@@ -28,7 +28,8 @@ pub fn read_nnd(filepath: &str) -> Option<Network> {
 	for line in contents.lines() {
 		let mut layer: Vec<Neuron> = Vec::new();
 
-		for word in line.split(" ") {
+		for word in line.split("|") {
+			println!("{}", word);
 			match word {
 				"Neurons" => {
 					reading_link = false;
@@ -78,7 +79,6 @@ pub fn read_nnd(filepath: &str) -> Option<Network> {
 
 		if reading_neuron {
 			network.add_layer( layer );
-			layer = Vec::new();
 		}
 	}
 	Some(network)
@@ -86,7 +86,7 @@ pub fn read_nnd(filepath: &str) -> Option<Network> {
 
 pub fn write_nnd(filepath: &str, network: Network) {
 	let mut file = match File::create_new(filepath) {
-		Err(e) => {
+		Err(_e) => {
 			println!("ERROR: write_nnd(): file already exists!");
 			return;
 		}
@@ -98,7 +98,7 @@ pub fn write_nnd(filepath: &str, network: Network) {
 }
 
 fn read_neuron(str: String) -> Option<Neuron> {
-	let mut s = str.split("-");
+	let mut s = str.split(" ");
 
 	let layer: usize = match s.next() {
 		None => {
@@ -107,7 +107,7 @@ fn read_neuron(str: String) -> Option<Neuron> {
 		},
 		Some(s) => match s.parse() {
 			Ok(num) => num,
-			Err(e) => {
+			Err(_e) => {
 				println!("ERROR: read_neuron(): Cannot Read Neuron Layer Number");
 				return None;
 			}
@@ -121,7 +121,7 @@ fn read_neuron(str: String) -> Option<Neuron> {
 		},
 		Some(s) => match s.parse() {
 			Ok(num) => num,
-			Err(e) => {
+			Err(_e) => {
 				println!("ERROR: read_neuron(): Cannot Read Neuron Index Number");
 				return None;
 			}
@@ -163,7 +163,7 @@ fn read_neuron(str: String) -> Option<Neuron> {
 }
 
 fn read_link(str: String) -> Option<Link> {
-	let mut s = str.split("-");
+	let mut s = str.split(" ");
 
 	let from_layer: usize = match s.next() {
 		None => {
@@ -172,7 +172,7 @@ fn read_link(str: String) -> Option<Link> {
 		},
 		Some(s) => match s.parse() {
 			Ok(num) => num,
-			Err(e) => {
+			Err(_e) => {
 				println!("ERROR: read_link(): Cannot Read Link From_Layer");
 				return None;
 			}
@@ -186,7 +186,7 @@ fn read_link(str: String) -> Option<Link> {
 		},
 		Some(s) => match s.parse() {
 			Ok(num) => num,
-			Err(e) => {
+			Err(_e) => {
 				println!("ERROR: read_link(): Cannot Read Link From_Index");
 				return None;
 			}
@@ -200,7 +200,7 @@ fn read_link(str: String) -> Option<Link> {
 		},
 		Some(s) => match s.parse() {
 			Ok(num) => num,
-			Err(e) => {
+			Err(_e) => {
 				println!("ERROR: read_link(): Cannot Read To_layer");
 				return None;
 			}
@@ -214,7 +214,7 @@ fn read_link(str: String) -> Option<Link> {
 		},
 		Some(s) => match s.parse() {
 			Ok(num) => num,
-			Err(e) => {
+			Err(_e) => {
 				println!("ERROR: read_link(): Cannot Read To_Index");
 				return None;
 			}
@@ -228,7 +228,7 @@ fn read_link(str: String) -> Option<Link> {
 		},
 		Some(s) => match s.parse() {
 			Ok(num) => num,
-			Err(e) => {
+			Err(_e) => {
 				println!("ERROR: Cannot Read Neuron Weight");
 				return None;
 			}

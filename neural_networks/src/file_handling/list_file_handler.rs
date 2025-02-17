@@ -6,14 +6,14 @@ use std::io::Write;
 pub fn file_exists(filepath: &str) -> bool {
 	let exists = File::open(filepath);
 	match exists {
-		Ok(f) => return true,
-		Err(e) => return false
+		Ok(_f) => return true,
+		Err(_e) => return false
 	}
 }
 
 pub fn create_list_file(filepath: &str, list: Vec<f32>) {
 	let mut file = match File::create_new(filepath) {
-		Err(e) => {
+		Err(_e) => {
 			println!("ERROR: write_list_file(): file already exists!");
 			return;
 		}
@@ -33,7 +33,7 @@ pub fn create_list_file(filepath: &str, list: Vec<f32>) {
 pub fn read_list_file(filepath: &str) -> Option<Vec<f32>> {
 	let contents = match fs::read_to_string(filepath) {
 		Ok(c) => c,
-        Err(e) => {
+        Err(_e) => {
 			println!("ERROR: Invalid List File Path!");
 			return None;
 		},
@@ -42,7 +42,7 @@ pub fn read_list_file(filepath: &str) -> Option<Vec<f32>> {
 	let mut list: Vec<f32> = Vec::new();
 	for num in contents.lines() {
 		match num.parse() {
-			Err(e) => {
+			Err(_e) => {
 				println!("ERROR READING {}", filepath);
 				return None;
 			}

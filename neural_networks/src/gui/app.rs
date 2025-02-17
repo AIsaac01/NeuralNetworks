@@ -1,4 +1,5 @@
 use iced::widget::Column;
+
 use crate::neural_network::network::{ActivationFunction, LossFunction};
 
 use super::main_menu::*;
@@ -33,26 +34,26 @@ pub enum Message {
 	GoToTestNetwork,
 	GoToModifyNetwork,
 
-	Create_UpdateBigBox,
-	Create_UpdateLayerSizeInput(String),
-	Create_PickActvFunc(ActivationFunction),
-	Create_PickLossFunc(LossFunction),
-	Create_RemoveRecentLayer,
-	Create_ClearAll,
-	Create_ChooseFilename(String),
-	Create_CreateNetwork,
+	CreateUpdateBigBox,
+	CreateUpdateLayerSizeInput(String),
+	CreatePickActvFunc(ActivationFunction),
+	CreatePickLossFunc(LossFunction),
+	CreateRemoveRecentLayer,
+	CreateClearAll,
+	CreateChooseFilename(String),
+	CreateCreateNetwork,
 
-	Train_UpdateNNFilename(String),
-	Train_UpdateInpFilename(String),
-	Train_UpdateOutFilename(String),
-	Train_UpdateEpochs(String),
-	Train_UpdateLearningRate(String),
-	Train_CheckSaveWeights(bool),
-	Train_TrainNetwork,
+	TrainUpdateNNFilename(String),
+	TrainUpdateInpFilename(String),
+	TrainUpdateOutFilename(String),
+	TrainUpdateEpochs(String),
+	TrainUpdateLearningRate(String),
+	TrainCheckSaveWeights(bool),
+	TrainTrainNetwork,
 
-	Test_UpdateNNFilename(String),
-	Test_UpdateInpFilename(String),
-	Test_TestNetwork,
+	TestUpdateNNFilename(String),
+	TestUpdateInpFilename(String),
+	TestTestNetwork,
 }
 
 pub struct App {

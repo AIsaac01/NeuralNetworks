@@ -1,11 +1,9 @@
-use iced::widget::{Column, TextInput, Row, column, text_input, row, button, text, scrollable};
-use iced::widget::pick_list;
-use iced::Theme;
+use iced::widget::{Column, column, text_input, row, button, text, pick_list, vertical_space, horizontal_space};
+
 use crate::neural_network::network::*;
 use crate::file_handling::nnd_file_handler::*;
-use iced::widget::{vertical_space, horizontal_space};
 
-use super::app::{AppPage, Message};
+use super::app::*;
 
 const MAX_BIG_BOX_LINES: u8 = 10;
 
@@ -35,16 +33,16 @@ impl AppPage for CreateMenu {
 			column![
 				button("Scroll Up"),
 				button("Scroll Down"),
-				button("Remove Most Recent Layer").on_press(Message::Create_RemoveRecentLayer),
-				button("Clear All").on_press(Message::Create_ClearAll),
+				button("Remove Most Recent Layer").on_press(Message::CreateRemoveRecentLayer),
+				button("Clear All").on_press(Message::CreateClearAll),
 			],
 			vertical_space(),
 			row![
 				horizontal_space(),
 				column![
 					text("Enter layer size (number of neurons)"),
-					text_input("Enter layer size here ..." , &self.layer_size_input).on_input(Message::Create_UpdateLayerSizeInput),
-					button("add layer").on_press(Message::Create_UpdateBigBox),
+					text_input("Enter layer size here ..." , &self.layer_size_input).on_input(Message::CreateUpdateLayerSizeInput),
+					button("add layer").on_press(Message::CreateUpdateBigBox),
 				],
 				horizontal_space(),
 				column![
@@ -52,7 +50,7 @@ impl AppPage for CreateMenu {
 					pick_list(
 				        actv_funcs,
 				        self.activation_func,
-				        Message::Create_PickActvFunc,
+				        Message::CreatePickActvFunc,
 				    ).placeholder("Select Activation Function"),
 				],
 				horizontal_space(),
@@ -61,13 +59,13 @@ impl AppPage for CreateMenu {
 					pick_list(
 				        loss_funcs,
 				        self.loss_func,
-				        Message::Create_PickLossFunc,
+				        Message::CreatePickLossFunc,
 				    ).placeholder("Select Loss Function"),
 				],
 			],
 			vertical_space(),
-			text_input("Enter File name,.." , &self.filename).on_input(Message::Create_ChooseFilename),
-			button("Create Network").on_press(Message::Create_CreateNetwork),
+			text_input("Enter File name,.." , &self.filename).on_input(Message::CreateChooseFilename),
+			button("Create Network").on_press(Message::CreateCreateNetwork),
 			vertical_space(),
 			// main menu button
 			row![
@@ -86,12 +84,12 @@ impl AppPage for CreateMenu {
 			Message::GoToMainMenu => {
 				println!("Navigtaing to Main Menu!");
 			},
-			Message::Create_UpdateBigBox => {
+			Message::CreateUpdateBigBox => {
 				println!("{}", self.layer_size_input);
 
 				// read layer size input (unsigned int)
 				let layer_size: u32 = match self.layer_size_input.parse::<u32>() {
-					Err(e) => {
+					Err(_e) => {
 						println!("ERROR: Layer Size Input  must be unsigned integer");
 						return;
 					},
@@ -121,7 +119,7 @@ impl AppPage for CreateMenu {
 
 
 			},
-			Message::Create_RemoveRecentLayer => {
+			Message::CreateRemoveRecentLayer => {
 				self.layers.pop();
 				self.big_box_contents.pop();
 
@@ -138,24 +136,24 @@ impl AppPage for CreateMenu {
 					}
 				}
 			},
-			Message::Create_ClearAll => {
+			Message::CreateClearAll => {
 				self.layers.clear();
 				self.big_box_contents.clear();
 				self.big_box_text = String::new();
 			},
-			Message::Create_UpdateLayerSizeInput(content) => {
+			Message::CreateUpdateLayerSizeInput(content) => {
 				self.layer_size_input = String::from(content);
 			},
-			Message::Create_PickActvFunc(content) => {
+			Message::CreatePickActvFunc(content) => {
 				self.activation_func = Some(*content);
 			},
-			Message::Create_PickLossFunc(content) => {
+			Message::CreatePickLossFunc(content) => {
 				self.loss_func = Some(*content);
 			},
-			Message::Create_ChooseFilename(content) => {
+			Message::CreateChooseFilename(content) => {
 				self.filename = String::from(content);
 			},
-			Message::Create_CreateNetwork => {
+			Message::CreateCreateNetwork => {
 				// heavy lifting here
 
 				// check if filepath is right
@@ -163,6 +161,7 @@ impl AppPage for CreateMenu {
 				f.push_str("../nnd_files/");
 				f.push_str(self.filename.as_str());
 				f.push_str(".nnd");
+				println!("Path = {}", f);
 				let exists = nnd_exists(f.as_str());
 				if exists {
 					self.notification = String::from("Error: NND File already Exists!");
@@ -179,7 +178,7 @@ impl AppPage for CreateMenu {
 						neurons.push( Neuron::new(layer_num, index as usize, self.activation_func, None) );
 					}
 					if (layer_num == self.layers.len() - 1) && self.loss_func.is_some() {
-						for mut neuron in &mut neurons {
+						for neuron in &mut neurons {
 							neuron.set_loss_func(self.loss_func);
 						}
 					}
