@@ -11,7 +11,23 @@ pub enum ActivationFunction {
 	ReLU
 }
 
-// Implementing Display trait for printing
+impl ActivationFunction {
+	fn calculate(&self, inp: f32) -> f32 {
+		match self {
+			Self::Sigmoid => return sigmoid(inp),
+			Self::ReLU => return relu(inp),
+		}
+	}
+
+	fn calculate_deriv(&self, inp: f32) -> f32 {
+		match self {
+			Self::Sigmoid => return d_sigmoid(inp),
+			Self::ReLU => return d_relu(inp),
+		}
+	}
+}
+
+// Implementing Display trait for printing Activation Functions
 impl std::fmt::Display for ActivationFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
@@ -27,6 +43,21 @@ pub enum LossFunction {
 	MeanSquareError
 }
 
+impl LossFunction {
+	fn calculate(&self, inp: f32, expected_output: f32) -> f32 {
+		match self {
+			Self::MeanSquareError => return mean_squared_error(inp, expected_output),
+		}
+	}
+
+	fn calculate_deriv(&self, inp: f32, expected_output: f32) -> f32 {
+		match self {
+			Self::MeanSquareError => return d_mean_squared_error(inp, expected_output),
+		}
+	}
+}
+
+// Implementing Display trait for printing Loss Functions
 impl std::fmt::Display for LossFunction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
@@ -37,13 +68,15 @@ impl std::fmt::Display for LossFunction {
 
 /****************** Structs ******************/
 
+// defines the Neuron within a neural network
+// this is synonymous to a node within a graph structure
 pub struct Neuron {
-	location: Coord,
-	actv_func: Option<ActivationFunction>,
-	loss_func: Option<LossFunction>,
-	value: f32, // value before activation
-	activated_value: f32,
-	loss: f32
+	location: Coord,							// Coordinate within the network
+	actv_func: Option<ActivationFunction>,		// optionally defined activation function for this neuron
+	loss_func: Option<LossFunction>,			// optionally defined loss function for this neuron
+	value: f32, 								// value before activation
+	activated_value: f32,						// value after activation
+	loss: f32									// loss of activated value, used in back propagation
 }
 
 // A link is a connection between two neurons
@@ -55,9 +88,9 @@ pub struct Link {
 
 // Defines an entire neural network
 pub struct Network {
-	matrix: Vec<Vec<Neuron>>, // 2d array of [layer][neuron]
-	links: Vec<Link>,
-	learning_rate: f32
+	matrix: Vec<Vec<Neuron>>, 	// 2-dimensional matrix of layers and their respective neurons, indexed as [layer][neuron]
+	links: Vec<Link>,			// List of all connections within the network
+	learning_rate: f32			// learning rate used in training the network
 }
 
 /****************** Implementations ******************/
@@ -75,14 +108,17 @@ impl Neuron {
 		}
 	}
 
+	// sets activation function
 	pub fn set_actv_func(&mut self, func: Option<ActivationFunction>) {
 		self.actv_func = func;
 	}
 
+	// sets loss function
 	pub fn set_loss_func(&mut self, func: Option<LossFunction>) {
 		self.loss_func = func;
 	}
 
+	// changes the output value of neuron *before activation*
 	pub fn update_val(&mut self, new_val: f32) {
 		self.value = new_val;
 	}
@@ -91,42 +127,34 @@ impl Neuron {
 	pub fn activate(&mut self) {
 		match &self.actv_func {
 			None => {
+				// no activation function specified
 				self.activated_value = self.value;
 			},
 			Some(func) => {
-				match func {
-					ActivationFunction::Sigmoid => self.activated_value = sigmoid(self.value),
-					ActivationFunction::ReLU => self.activated_value = relu(self.value),
-				}
-			},
+				self.activated_value = func.calculate(self.value);
+			}
 		}
 	}
 
 	// applies the derivative of activation function, used in backprop
 	pub fn d_activate(&mut self) -> f32 {
 		match &self.actv_func {
-			None => return 1.0,
-			Some(func) => {
-				match func {
-					ActivationFunction::Sigmoid => return d_sigmoid(self.value),
-					ActivationFunction::ReLU => return d_relu(self.value),
-				}
+			None => {
+				// no activation function specified
+				return 1.0;
 			},
+			Some(func) => {
+				return func.calculate_deriv(self.value);
+			}
 		}
 	}
 
-	// calculates loss of this neuron against a given value
+	// calculates loss of this neuron against a given value and updates loss value
 	pub fn calculate_loss(&mut self, expected_output: f32) {
 		match &self.loss_func {
-			None => {
-				println!("No Loss Func, Skipping calculate_loss()");
-			},
+			None => (),	// no calculations to be done
 			Some(func) => {
-				match func {
-					LossFunction::MeanSquareError => {
-						self.loss = d_mean_squared_error(self.value, expected_output);
-					}
-				}
+				self.loss = func.calculate_deriv(self.value, expected_output);
 			}
 		}
 	}
@@ -158,7 +186,6 @@ impl Neuron {
 	}
 
 }
-
 
 impl Link {
 	// returns a new link object
@@ -198,6 +225,7 @@ impl Network {
 		}
 	}
 
+	// sets network learning rate
 	pub fn set_learning_rate(&mut self, lr: f32) {
 		self.learning_rate = lr;
 	}
@@ -213,6 +241,7 @@ impl Network {
 	}
 
 	// copies values from an input array to the input layer, as long as they match in size
+	// this must be done once at the beginning of training
 	pub fn attach_inputs(&mut self, inputs: Vec<f32>) {
 		if self.matrix[0].len() == 0 {
 			self.matrix.remove(0);
@@ -232,13 +261,12 @@ impl Network {
 		}
 
 		// clear all values except input
+		let mut layers = self.matrix.iter_mut();
+		layers.next();	// skip input neurons
 		for layer in self.matrix.iter_mut() {
 			for neuron in layer.iter_mut() {
-				// skip input neurons
-				if neuron.location.0 != 0 {
-					neuron.value = 0.0;
-					neuron.activated_value = 0.0;
-				}
+				neuron.value = 0.0;
+				neuron.activated_value = 0.0;
 			}
 		}
 
@@ -250,7 +278,6 @@ impl Network {
 				layer_num += 1;
 				// activate this layer before propagating to the next
 				for neuron in self.matrix[layer_num].iter_mut() {
-					// neuron.loss = neuron.d_activate();
 					neuron.activate();
 				}
 			}
@@ -276,13 +303,7 @@ impl Network {
 
 		// calculate loss for each output neuron and backpropagate loss
 		for i in 0..num_outputs {
-			// This commented out code might not be necessary because I dont think loss values are overwritten anyways
-			// // clear all loss values
-			// for layer in self.matrix.iter_mut() {
-			// 	for neuron in layer.iter_mut() {
-			// 		neuron.loss = 0.0;
-			// 	}
-			// }
+			// the three steps in training the network
 			self.matrix[output_layer_index][i].calculate_loss( expected_outputs[i] );
 			self.prop_loss( (output_layer_index, i) );
 			self.update_weights( (output_layer_index, i) );

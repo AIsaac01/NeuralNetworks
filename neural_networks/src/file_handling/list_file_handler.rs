@@ -2,7 +2,7 @@ use std::fs;
 use std::fs::File;
 use std::io::Write;
 
-// literally copied and pasted this from nnd_exists(), I'm not ashamed
+// checks to see if file exists
 pub fn file_exists(filepath: &str) -> bool {
 	let exists = File::open(filepath);
 	match exists {
@@ -11,6 +11,7 @@ pub fn file_exists(filepath: &str) -> bool {
 	}
 }
 
+// creates a list file from a given filepath and vector of f32's
 pub fn create_list_file(filepath: &str, list: Vec<f32>) {
 	let mut file = match File::create_new(filepath) {
 		Err(_e) => {
@@ -30,6 +31,7 @@ pub fn create_list_file(filepath: &str, list: Vec<f32>) {
 
 }
 
+// Reads list file, returns None for Error (NOTE: Replace Option with Result)
 pub fn read_list_file(filepath: &str) -> Option<Vec<f32>> {
 	let contents = match fs::read_to_string(filepath) {
 		Ok(c) => c,

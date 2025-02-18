@@ -15,6 +15,7 @@ pub fn d_sigmoid(val: f32) -> f32 {
 	sigmoid(val) * (1.0 - sigmoid(val))
 }
 
+// Recitfied Linear Unit Function
 pub fn relu(val: f32) -> f32 {
 	if val < 0.0 {
 		return 0.0;

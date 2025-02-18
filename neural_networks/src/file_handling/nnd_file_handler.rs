@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::Write;
 use crate::neural_network::network::*;
 
+// checks to see if file exists
 pub fn nnd_exists(filepath: &str) -> bool {
 	let exists = File::open(filepath);
 	match exists {
@@ -11,6 +12,7 @@ pub fn nnd_exists(filepath: &str) -> bool {
 	}
 }
 
+// reads nnd file and returns None for error (NOTE: USE RESULT INSTEAD)
 pub fn read_nnd(filepath: &str) -> Option<Network> {
 	let contents = match fs::read_to_string(filepath) {
 		Ok(c) => c,
@@ -84,6 +86,7 @@ pub fn read_nnd(filepath: &str) -> Option<Network> {
 	Some(network)
 }
 
+// Writes an NND file
 pub fn write_nnd(filepath: &str, network: Network) {
 	let mut file = match File::create_new(filepath) {
 		Err(_e) => {
@@ -97,6 +100,7 @@ pub fn write_nnd(filepath: &str, network: Network) {
 
 }
 
+// parses text and returns neuron object (NOTE: I should REALLY replace Option with Result)
 fn read_neuron(str: String) -> Option<Neuron> {
 	let mut s = str.split(" ");
 
@@ -162,6 +166,7 @@ fn read_neuron(str: String) -> Option<Neuron> {
 	Some(Neuron::new(layer, index, actv, loss))
 }
 
+// parses text and returns link object (NOTE: I should REALLY, REALLY, REALLY replace Option with Result)
 fn read_link(str: String) -> Option<Link> {
 	let mut s = str.split(" ");
 

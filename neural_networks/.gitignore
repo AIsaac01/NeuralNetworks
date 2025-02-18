@@ -1,1 +1,4 @@
 /target
+/inputs/*
+/expected_outputs/*
+/nnd_files/*
